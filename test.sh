@@ -16,9 +16,13 @@ assert() {
   fi
 }
 
+# test single integer
 assert 0 0
 assert 42 42
 assert 255 255
 # assert 53 123
+# test multi integer with plus and minus operator
+assert 21 '5+20-4'
+assert 30 '5 + 20 - 4 + 9'
 
 echo OK!
