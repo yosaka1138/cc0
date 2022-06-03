@@ -24,5 +24,6 @@ assert 255 255
 # test multi integer with plus and minus operator
 assert 21 '5+20-4'
 assert 30 '5 + 20 - 4 + 9'
+assert 15 '20 - 30 + 25'
 
 echo OK!
