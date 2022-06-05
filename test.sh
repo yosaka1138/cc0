@@ -25,5 +25,6 @@ assert 255 255
 assert 21 '5+20-4'
 assert 30 '5 + 20 - 4 + 9'
 assert 15 '20 - 30 + 25'
+assert 15 '20 + asumiakana -5'
 
 echo OK!
