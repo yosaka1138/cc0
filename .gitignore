@@ -56,3 +56,4 @@ dkms.conf
 tmp*
 a.out
 9cc
+.vscode
