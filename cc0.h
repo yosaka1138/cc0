@@ -6,8 +6,7 @@
 #include <string.h>
 
 //トークンの種類
-typedef enum
-{
+typedef enum {
   TK_RESERVED, // 記号
   TK_NUM,      // 数値
   TK_EOF,      // 入力の終わりを表すトークン
@@ -16,8 +15,7 @@ typedef enum
 typedef struct Token Token;
 
 // トークン型
-struct Token
-{
+struct Token {
   TokenKind kind; // トークンの型
   Token *next;    // 次の入力トークン
   int val;        // kindがTK＿NUMの時，その数値
@@ -57,8 +55,7 @@ Token *tokenize();
 
 // Paeser
 // 抽象構文木のノードの種類　
-typedef enum
-{
+typedef enum {
   ND_ADD, // +
   ND_SUB, // -
   ND_MUL, // *
@@ -72,8 +69,7 @@ typedef enum
 
 typedef struct Node Node;
 
-struct Node
-{
+struct Node {
   NodeKind kind; // ノードの型
   Node *lhs;     // 左辺 left hand side
   Node *rhs;     // 右辺 right hand side
