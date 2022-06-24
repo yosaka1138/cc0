@@ -246,10 +246,6 @@ Node *primary() {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
     node->offset = (tok->str[0] - 'a' + 1) * 8;
-    /* if (node->offset < 0) { */
-    /*   printf("%d\n", node->offset); */
-    /*   exit(1); */
-    /* } */
     return node;
   }
 
