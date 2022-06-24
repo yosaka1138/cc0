@@ -2,7 +2,17 @@
 
 // エラー報告のための関数
 // printfと同じ引数をとる
-void error(char *loc, char *fmt, ...) {
+void error(char *fmt, ...) {
+  va_list ap;
+  va_start(ap, fmt);
+
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
+  exit(1);
+}
+
+// 具体的な位置を示すエラー報告のための関数
+void error_at(char *loc, char *fmt, ...) {
   va_list ap;
   va_start(ap, fmt);
 
@@ -26,12 +36,21 @@ bool consume(char *op) {
   return true;
 }
 
+Token *consume_ident() {
+  if (token->kind != TK_IDENT) {
+    return NULL;
+  }
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 // 次のトークンが期待している記号の時には，トークンを1つ読み進める
 // それ以外はエラー
 void expect(char *op) {
   if (token->kind != TK_RESERVED || strlen(op) != token->len ||
       memcmp(token->str, op, token->len))
-    error(token->str, "'%s'ではありません", op);
+    error_at(token->str, "'%s'ではありません", op);
   token = token->next;
 }
 
@@ -39,7 +58,7 @@ void expect(char *op) {
 // それ以外はエラー
 int expect_number() {
   if (token->kind != TK_NUM)
-    error(token->str, "数字ではありません");
+    error_at(token->str, "数字ではありません");
   int val = token->val;
   token = token->next;
   return val;
@@ -81,9 +100,17 @@ Token *tokenize() {
       continue;
     }
 
+    // アルファベット小文字1文字ならTK_IDENT
+    if ('a' <= *p && *p <= 'z') {
+      cur = new_token(TK_IDENT, cur, p, 1);
+      p++;
+      continue;
+    }
+
     // 1文字の演算子
-    if (strchr("+-*/()<>", *p)) {
-      cur = new_token(TK_RESERVED, cur, p++, 1);
+    if (strchr("+-*/()<>=;", *p)) {
+      cur = new_token(TK_RESERVED, cur, p, 1);
+      p++;
       continue;
     }
 
@@ -95,7 +122,7 @@ Token *tokenize() {
       continue;
     }
 
-    error(p, "トークナイズできません。");
+    error_at(p, "トークナイズできません。");
   }
 
   new_token(TK_EOF, cur, p, 0);
@@ -123,9 +150,29 @@ Node *new_num(int val) {
   return node;
 }
 
-// パーサ
-// expr = equality
-Node *expr() { return equality(); }
+Node *assign() {
+  Node *node = equality();
+  if (consume("="))
+    node = new_binary(ND_ASSIGN, node, assign());
+  return node;
+}
+
+Node *expr() { return assign(); }
+
+Node *stmt() {
+  Node *node = expr();
+  expect(";");
+  return node;
+}
+
+void program() {
+  int i = 0;
+  while (!at_eof()) {
+    code[i++] = stmt();
+  }
+  code[i] = NULL;
+}
+
 Node *equality() {
   Node *node = relational();
 
@@ -139,7 +186,6 @@ Node *equality() {
   }
 }
 
-// relational = add
 Node *relational() {
   Node *node = add();
   for (;;) {
@@ -156,7 +202,6 @@ Node *relational() {
   }
 }
 
-// add = mul
 Node *add() {
   Node *node = mul();
   for (;;) {
@@ -169,7 +214,6 @@ Node *add() {
   }
 }
 
-// mul = unary
 Node *mul() {
   Node *node = unary();
   for (;;) {
@@ -181,6 +225,7 @@ Node *mul() {
       return node;
   }
 }
+
 Node *unary() {
   if (consume("+"))
     return unary();
@@ -196,6 +241,18 @@ Node *primary() {
     expect(")");
     return node;
   }
+  Token *tok = consume_ident();
+  if (tok) {
+    Node *node = calloc(1, sizeof(Node));
+    node->kind = ND_LVAR;
+    node->offset = (tok->str[0] - 'a' + 1) * 8;
+    /* if (node->offset < 0) { */
+    /*   printf("%d\n", node->offset); */
+    /*   exit(1); */
+    /* } */
+    return node;
+  }
+
   // そうでなければ数値
   return new_num(expect_number());
 }

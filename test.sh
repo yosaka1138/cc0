@@ -17,41 +17,45 @@ assert() {
 }
 
 # test single integer
-assert 0 0
-assert 42 42
-assert 255 255
+assert 0 '0;'
+assert 42 '42;'
+assert 255 '255;'
 # assert 53 123
 # test multi integer with plus and minus operator
-assert 21 '5+20-4'
-assert 30 '5 + 20 - 4 + 9'
-assert 15 '20 - 30 + 25'
-assert 47 '5 + 6 * 7'
-assert 15 '5 * (9 -6)'
-assert 4 '(3 + 5) / 2'
-assert 8 '(3 * 5 + 1) /2'
-assert 10 '- -10'
-assert 10 '- - +10'
+assert 21 '5+20-4;'
+assert 30 '5 + 20 - 4 + 9;'
+assert 15 '20 - 30 + 25;'
+assert 47 '5 + 6 * 7;'
+assert 15 '5 * (9 -6);'
+assert 4 '(3 + 5) / 2;'
+assert 8 '(3 * 5 + 1) /2;'
+assert 10 '- -10;'
+assert 10 '- - +10;'
 
-assert 0 '0==1'
-assert 1 '42 == 42'
-assert 1 '0!=1'
-assert 0 '42 != 42'
+assert 0 '0==1;'
+assert 1 '42 == 42;'
+assert 1 '0!=1;'
+assert 0 '42 != 42;'
 
-assert 1 '0<1'
-assert 0 '1 < 1'
-assert 1 '0!=1'
-assert 0 '1 != 1'
-assert 0 '2 < 1'
-assert 1 '1<=1'
-assert 0 '2 <= 1'
+assert 1 '0<1;'
+assert 0 '1 < 1;'
+assert 1 '0!=1;'
+assert 0 '1 != 1;'
+assert 0 '2 < 1;'
+assert 1 '1<=1;'
+assert 0 '2 <= 1;'
 
-assert 1 '1>0'
-assert 0 '1 > 1'
-assert 0 '1>2'
-assert 1 '1 >= 0'
-assert 1 '1>=1'
-assert 0 '1 >= 2'
+assert 1 '1>0;'
+assert 0 '1 > 1;'
+assert 0 '1>2;'
+assert 1 '1 >= 0;'
+assert 1 '1>=1;'
+assert 0 '1 >= 2;'
 
+# 1文字変数
+assert 5 'a =3 + 2;'
+assert 23 'a = 3; b = 20; a + b;'
+assert 14 "a = 3; b = 5 * 6 - 8; a + b / 2;"
 
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
