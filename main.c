@@ -5,7 +5,7 @@ int main(int argc, char **argv) {
     fprintf(stderr, "引数の個数が正しくないです\n");
     return 1;
   }
-
+  locals = NULL;
   // 入力をトークナイズする
   user_input = argv[1];
   token = tokenize();

@@ -57,6 +57,13 @@ assert 5 'a =3 + 2;'
 assert 23 'a = 3; b = 20; a + b;'
 assert 14 "a = 3; b = 5 * 6 - 8; a + b / 2;"
 
+# 複数文字
+assert 6 "foo=1; bar = 2 + 3; foo + bar;"
+
+# return文
+assert 14 "a = 3; b = 5 * 6 - 8; return a + b / 2;"
+
+
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
 echo OK!

@@ -11,6 +11,7 @@ typedef enum {
   TK_IDENT,    // 識別子
   TK_NUM,      // 数値
   TK_EOF,      // 入力の終わりを表すトークン
+  TK_RETURN,   // return文
 } TokenKind;
 
 typedef struct Token Token;
@@ -24,9 +25,21 @@ struct Token {
   int len;        // トークンの長さ
 };
 
+typedef struct LVar LVar;
+struct LVar {
+  LVar *next; // 次の変数かNULL
+  char *name; // 変数名
+  int len;    // 変数名長さ
+  int offset; // RBPからのオフセット
+};
+
+LVar *find_lvar(Token *tok);
+
 //現在見ているトークン
 Token *token;
 char *user_input;
+// ローカル変数
+LVar *locals;
 
 // エラー報告のための関数
 // printfと同じ引数をとる
@@ -37,6 +50,7 @@ void error_at(char *loc, char *fmt, ...);
 // trueを返す。それ以外はfalse
 bool consume(char *op);
 Token *consume_ident();
+Token *consume_return();
 // 次のトークンが期待している記号の時には，トークンを1つ読み進める
 // それ以外はエラー
 void expect(char *op);
@@ -52,6 +66,7 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 
 bool startswith(char *p, char *q);
 
+int is_alnum(char c);
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize();
 
@@ -69,6 +84,7 @@ typedef enum {
   ND_NUM,    // 整数
   ND_ASSIGN, // =
   ND_LVAR,   // ローカル変数
+  ND_RETURN, // return
 } NodeKind;
 
 typedef struct Node Node;

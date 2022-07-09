@@ -36,6 +36,15 @@ bool consume(char *op) {
   return true;
 }
 
+Token *consume_return() {
+  if (token->kind != TK_RETURN) {
+    return NULL;
+  }
+  Token *tok = token;
+  token = token->next;
+  return tok;
+}
+
 Token *consume_ident() {
   if (token->kind != TK_IDENT) {
     return NULL;
@@ -43,6 +52,14 @@ Token *consume_ident() {
   Token *tok = token;
   token = token->next;
   return tok;
+}
+
+LVar *find_lvar(Token *tok) {
+  for (LVar *var = locals; var; var = var->next) {
+    if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
+      return var;
+  }
+  return NULL;
 }
 
 // 次のトークンが期待している記号の時には，トークンを1つ読み進める
@@ -78,6 +95,11 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
 
 bool startswith(char *p, char *q) { return memcmp(p, q, strlen(q)) == 0; }
 
+int is_alnum(char c) {
+  return ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
+         ('0' <= c && c <= '9') || (c == '_');
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize() {
   char *p = user_input;
@@ -100,10 +122,21 @@ Token *tokenize() {
       continue;
     }
 
+    if (startswith(p, "return") && !is_alnum(p[6])) {
+      cur = new_token(TK_RETURN, cur, p, 6);
+      p += 6;
+      continue;
+    }
+
     // アルファベット小文字1文字ならTK_IDENT
     if ('a' <= *p && *p <= 'z') {
-      cur = new_token(TK_IDENT, cur, p, 1);
-      p++;
+      char *c = p;
+      while ('a' <= *c && *c <= 'z') {
+        c++;
+      }
+      int len = c - p;
+      cur = new_token(TK_IDENT, cur, p, len);
+      p = c;
       continue;
     }
 
@@ -160,7 +193,14 @@ Node *assign() {
 Node *expr() { return assign(); }
 
 Node *stmt() {
-  Node *node = expr();
+  Node *node;
+  if (consume_return()) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_RETURN;
+    node->lhs = expr();
+  } else {
+    node = expr();
+  }
   expect(";");
   return node;
 }
@@ -242,10 +282,29 @@ Node *primary() {
     return node;
   }
   Token *tok = consume_ident();
+
   if (tok) {
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
-    node->offset = (tok->str[0] - 'a' + 1) * 8;
+
+    LVar *lvar = find_lvar(tok);
+    if (lvar) {
+      node->offset = lvar->offset;
+    } else {
+      lvar = calloc(1, sizeof(LVar));
+      lvar->next = locals;
+      lvar->name = tok->str;
+      lvar->len = tok->len;
+      if (locals == NULL) {
+        lvar->offset = 8;
+      } else {
+        lvar->offset = locals->offset + 8;
+      }
+      node->offset = lvar->offset;
+      locals = lvar;
+    }
+
+    /* node->offset = (tok->str[0] - 'a' + 1) * 8; */
     return node;
   }
 
