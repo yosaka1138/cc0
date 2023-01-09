@@ -21,6 +21,7 @@ void gen(Node *node) {
     printf("  je .Lend001\n");
     gen(node->rhs);
     printf(".Lend001:\n");
+    return;
 
   case ND_NUM:
     printf("  push %d\n", node->val);
