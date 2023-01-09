@@ -45,6 +45,15 @@ Token *consume_return() {
   return tok;
 }
 
+Token *consume_if() {
+  if (token->kind != TK_IF) {
+    return NULL;
+  }
+  Token *tok = token;
+  token = tok->next;
+  return tok;
+}
+
 Token *consume_ident() {
   if (token->kind != TK_IDENT) {
     return NULL;
@@ -128,6 +137,12 @@ Token *tokenize() {
       continue;
     }
 
+    if (startswith(p, "if") && !is_alnum(p[2])) {
+      cur = new_token(TK_IF, cur, p, 2);
+      p += 2;
+      continue;
+    }
+
     // アルファベット小文字1文字ならTK_IDENT
     if ('a' <= *p && *p <= 'z') {
       char *c = p;
@@ -192,8 +207,24 @@ Node *assign() {
 
 Node *expr() { return assign(); }
 
+// stmt = expr ";"
+//        |  "if" "(" expr ")" stmt ("else" stmt)?
+//        |  "while" "(" expr ")" stmt
+//        |  "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//        |  ...
 Node *stmt() {
   Node *node;
+
+  if (consume_if()) {
+    expect("(");
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_IF;
+    node->lhs = expr();
+    expect(")");
+    node->rhs = stmt();
+    return node;
+  }
+
   if (consume_return()) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_RETURN;
@@ -205,6 +236,7 @@ Node *stmt() {
   return node;
 }
 
+// program = stmt*
 void program() {
   int i = 0;
   while (!at_eof()) {

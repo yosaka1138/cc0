@@ -62,7 +62,11 @@ assert 6 "foo=1; bar = 2 + 3; foo + bar;"
 
 # return文
 assert 14 "a = 3; b = 5 * 6 - 8; return a + b / 2;"
+assert 3 "a = 3; if (a == 3) return a;
+return 5;"
 
+assert 5 "a = 3; if (a == 5) return a;
+return 5;"
 
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'

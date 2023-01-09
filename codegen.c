@@ -13,6 +13,15 @@ void gen_lval(Node *node) {
 // Code Generator
 void gen(Node *node) {
   switch (node->kind) {
+
+  case ND_IF:
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je .Lend001\n");
+    gen(node->rhs);
+    printf(".Lend001:\n");
+
   case ND_NUM:
     printf("  push %d\n", node->val);
     return;
