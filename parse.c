@@ -36,32 +36,14 @@ bool consume(char *op) {
   return true;
 }
 
-Token *consume_return() {
-  if (token->kind != TK_RETURN) {
+Token *consume_kind(TokenKind kind) {
+  if (token->kind != kind) {
     return NULL;
   }
   Token *tok = token;
   token = token->next;
   return tok;
-}
-
-Token *consume_if() {
-  if (token->kind != TK_IF) {
-    return NULL;
-  }
-  Token *tok = token;
-  token = tok->next;
-  return tok;
-}
-
-Token *consume_ident() {
-  if (token->kind != TK_IDENT) {
-    return NULL;
-  }
-  Token *tok = token;
-  token = token->next;
-  return tok;
-}
+};
 
 LVar *find_lvar(Token *tok) {
   for (LVar *var = locals; var; var = var->next) {
@@ -143,6 +125,12 @@ Token *tokenize() {
       continue;
     }
 
+    if (startswith(p, "else") && !is_alnum(p[4])) {
+      cur = new_token(TK_ELSE, cur, p, 4);
+      p += 4;
+      continue;
+    }
+
     // アルファベット小文字1文字ならTK_IDENT
     if ('a' <= *p && *p <= 'z') {
       char *c = p;
@@ -215,17 +203,24 @@ Node *expr() { return assign(); }
 Node *stmt() {
   Node *node;
 
-  if (consume_if()) {
+  if (consume_kind(TK_IF)) {
     expect("(");
     node = calloc(1, sizeof(Node));
     node->kind = ND_IF;
     node->lhs = expr();
     expect(")");
     node->rhs = stmt();
+    if (consume_kind(TK_ELSE)) {
+      Node *els = calloc(1, sizeof(Node));
+      els->kind = ND_ELSE;
+      els->lhs = node->rhs;
+      els->rhs = stmt();
+      node->rhs = els;
+    }
     return node;
   }
 
-  if (consume_return()) {
+  if (consume_kind(TK_RETURN)) {
     node = calloc(1, sizeof(Node));
     node->kind = ND_RETURN;
     node->lhs = expr();
@@ -313,7 +308,7 @@ Node *primary() {
     expect(")");
     return node;
   }
-  Token *tok = consume_ident();
+  Token *tok = consume_kind(TK_IDENT);
 
   if (tok) {
     Node *node = calloc(1, sizeof(Node));

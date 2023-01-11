@@ -13,6 +13,7 @@ typedef enum {
   TK_EOF,      // 入力の終わりを表すトークン
   TK_RETURN,   // return文
   TK_IF,       // if 文
+  TK_ELSE,     // else
 } TokenKind;
 
 typedef struct Token Token;
@@ -50,9 +51,7 @@ void error_at(char *loc, char *fmt, ...);
 // 次のトークンが期待している記号の時には，トークンを1つ読み進めて
 // trueを返す。それ以外はfalse
 bool consume(char *op);
-Token *consume_ident();
-Token *consume_return();
-Token *consume_if();
+Token *consume_kind(TokenKind kind);
 
 // 次のトークンが期待している記号の時には，トークンを1つ読み進める
 // それ以外はエラー
@@ -89,6 +88,7 @@ typedef enum {
   ND_LVAR,   // ローカル変数
   ND_RETURN, // return
   ND_IF,     // if
+  ND_ELSE,   // else
 } NodeKind;
 
 typedef struct Node Node;

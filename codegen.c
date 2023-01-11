@@ -18,9 +18,20 @@ void gen(Node *node) {
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je .Lend001\n");
-    gen(node->rhs);
-    printf(".Lend001:\n");
+    printf("  je .LelseXXX\n");
+    // if 文の中身を書く
+    if (node->rhs->kind == ND_ELSE) {
+      gen(node->rhs->lhs);
+    } else {
+      gen(node->rhs);
+    }
+    printf("  jmp .LendXXX\n");
+    printf(".LelseXXX:\n");
+    // else文がある場合はelseの中身を書く
+    if (node->rhs->kind == ND_ELSE) {
+      gen(node->rhs->rhs);
+    }
+    printf(".LendXXX:\n");
     return;
 
   case ND_NUM:

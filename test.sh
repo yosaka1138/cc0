@@ -68,6 +68,12 @@ return 5;"
 assert 5 "a = 3; if (a == 5) return a;
 return 5;"
 
+assert 3 "if (3 == 3) return 3;
+else return 5;"
+
+assert 5 "if (3 != 3) return 3;
+else return 5;"
+
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
 echo OK!
