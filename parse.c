@@ -1,4 +1,5 @@
 #include "cc0.h"
+#include <string.h>
 
 // エラー報告のための関数
 // printfと同じ引数をとる
@@ -84,6 +85,17 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
   return tok;
 }
 
+typedef struct ReservedWord ReservedWord;
+struct ReservedWord {
+  char *word;
+  TokenKind kind;
+};
+
+ReservedWord reservedWords[] = {
+    {"return", TK_RETURN}, {"if", TK_IF}, {"else", TK_ELSE},
+    {"while", TK_WHILE},   {"", TK_EOF},
+};
+
 bool startswith(char *p, char *q) { return memcmp(p, q, strlen(q)) == 0; }
 
 int is_alnum(char c) {
@@ -113,27 +125,18 @@ Token *tokenize() {
       continue;
     }
 
-    if (startswith(p, "return") && !is_alnum(p[6])) {
-      cur = new_token(TK_RETURN, cur, p, 6);
-      p += 6;
-      continue;
+    bool found = false;
+    for (int i = 0; reservedWords[i].kind != TK_EOF; i++) {
+      char *w = reservedWords[i].word;
+      int len = strlen(w);
+      if (startswith(p, w) && !is_alnum(p[len])) {
+        cur = new_token(reservedWords[i].kind, cur, p, len);
+        p += len;
+        found = true;
+        break;
+      }
     }
-
-    if (startswith(p, "if") && !is_alnum(p[2])) {
-      cur = new_token(TK_IF, cur, p, 2);
-      p += 2;
-      continue;
-    }
-
-    if (startswith(p, "else") && !is_alnum(p[4])) {
-      cur = new_token(TK_ELSE, cur, p, 4);
-      p += 4;
-      continue;
-    }
-
-    if (startswith(p, "while") && !is_alnum(p[5])) {
-      cur = new_token(TK_WHILE, cur, p, 5);
-      p += 5;
+    if (found) {
       continue;
     }
 
