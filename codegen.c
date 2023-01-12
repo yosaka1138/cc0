@@ -1,4 +1,5 @@
 #include "cc0.h"
+#include <stdio.h>
 
 //
 void gen_lval(Node *node) {
@@ -13,6 +14,17 @@ void gen_lval(Node *node) {
 // Code Generator
 void gen(Node *node) {
   switch (node->kind) {
+
+  case ND_WHILE:
+    printf(".LbeginXXX:\n");
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  cmp rax, 0\n");
+    printf("  je .LendXXX\n");
+    gen(node->rhs);
+    printf("  jmp .LbeginXXX\n");
+    printf(".LendXXX:\n");
+    return;
 
   case ND_IF:
     gen(node->lhs);

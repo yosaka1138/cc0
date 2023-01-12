@@ -74,6 +74,10 @@ else return 5;"
 assert 5 "if (3 != 3) return 3;
 else return 5;"
 
+assert 11 "a = 0;
+while (a <= 10) a = a + 1;
+return a;"
+
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
 echo OK!

@@ -131,6 +131,12 @@ Token *tokenize() {
       continue;
     }
 
+    if (startswith(p, "while") && !is_alnum(p[5])) {
+      cur = new_token(TK_WHILE, cur, p, 5);
+      p += 5;
+      continue;
+    }
+
     // アルファベット小文字1文字ならTK_IDENT
     if ('a' <= *p && *p <= 'z') {
       char *c = p;
@@ -202,6 +208,16 @@ Node *expr() { return assign(); }
 //        |  ...
 Node *stmt() {
   Node *node;
+
+  if (consume_kind(TK_WHILE)) {
+    expect("(");
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_WHILE;
+    node->lhs = expr();
+    expect(")");
+    node->rhs = stmt();
+    return node;
+  }
 
   if (consume_kind(TK_IF)) {
     expect("(");
