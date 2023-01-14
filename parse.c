@@ -1,4 +1,5 @@
 #include "cc0.h"
+#include <stdlib.h>
 #include <string.h>
 
 // エラー報告のための関数
@@ -92,8 +93,8 @@ struct ReservedWord {
 };
 
 ReservedWord reservedWords[] = {
-    {"return", TK_RETURN}, {"if", TK_IF}, {"else", TK_ELSE},
-    {"while", TK_WHILE},   {"", TK_EOF},
+    {"return", TK_RETURN}, {"if", TK_IF},   {"else", TK_ELSE},
+    {"while", TK_WHILE},   {"for", TK_FOR}, {"", TK_EOF},
 };
 
 bool startswith(char *p, char *q) { return memcmp(p, q, strlen(q)) == 0; }
@@ -211,6 +212,36 @@ Node *expr() { return assign(); }
 //        |  ...
 Node *stmt() {
   Node *node;
+
+  if (consume_kind(TK_FOR)) {
+    expect("(");
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_FOR;
+    // for文を２つのNodeに分ける
+    // for (A; B; C) D;を(A, B) (C, D)に分ける
+    Node *left = calloc(1, sizeof(Node));
+    left->kind = ND_FOR_LEFT;
+    Node *right = calloc(1, sizeof(Node));
+    right->kind = ND_FOR_RIGHT;
+
+    // for (A; B; C) D のA,B,Cは省略可能なため
+    if (!consume(";")) {
+      left->lhs = expr();
+      expect(";");
+    }
+    if (!consume(";")) {
+      left->rhs = expr();
+      expect(";");
+    }
+    if (!consume(")")) {
+      right->lhs = expr();
+      expect(")");
+    }
+    right->rhs = stmt();
+    node->lhs = left;
+    node->rhs = right;
+    return node;
+  }
 
   if (consume_kind(TK_WHILE)) {
     expect("(");

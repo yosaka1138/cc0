@@ -15,6 +15,7 @@ typedef enum {
   TK_IF,       // if 文
   TK_ELSE,     // else
   TK_WHILE,    // while
+  TK_FOR       // for
 } TokenKind;
 
 typedef struct Token Token;
@@ -76,21 +77,24 @@ Token *tokenize();
 // Paeser
 // 抽象構文木のノードの種類　
 typedef enum {
-  ND_ADD,    // +
-  ND_SUB,    // -
-  ND_MUL,    // *
-  ND_DIV,    // /
-  ND_EQ,     // ==
-  ND_NE,     // !=
-  ND_LT,     // <
-  ND_LE,     // <=
-  ND_NUM,    // 整数
-  ND_ASSIGN, // =
-  ND_LVAR,   // ローカル変数
-  ND_RETURN, // return
-  ND_IF,     // if
-  ND_ELSE,   // else
-  ND_WHILE,  // while
+  ND_ADD,       // +
+  ND_SUB,       // -
+  ND_MUL,       // *
+  ND_DIV,       // /
+  ND_EQ,        // ==
+  ND_NE,        // !=
+  ND_LT,        // <
+  ND_LE,        // <=
+  ND_NUM,       // 整数
+  ND_ASSIGN,    // =
+  ND_LVAR,      // ローカル変数
+  ND_RETURN,    // return
+  ND_IF,        // if
+  ND_ELSE,      // else
+  ND_WHILE,     // while
+  ND_FOR,       // for
+  ND_FOR_LEFT,  // for left
+  ND_FOR_RIGHT, // for right
 } NodeKind;
 
 typedef struct Node Node;

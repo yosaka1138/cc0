@@ -78,6 +78,24 @@ assert 11 "a = 0;
 while (a <= 10) a = a + 1;
 return a;"
 
+assert 55 "a = 0;
+for (i = 1; i <= 10; i = i + 1) a = a + i;
+return a;"
+
+assert 10 "a = 0;
+for (; a < 10; ) a = a + 1;
+return a;"
+
+assert 1 "a = 1;
+for (;;) return a;"
+
+# multi control syntax
+assert 3 "a = 3;
+if (a == 2) return a;
+if (a != 3) return a;
+if (a == 3) return a;
+return 1;"
+
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
 echo OK!
