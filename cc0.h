@@ -97,17 +97,20 @@ typedef enum {
   ND_FOR_LEFT,  // for left
   ND_FOR_RIGHT, // for right
   ND_BLOCK,     // block
+  ND_FUNC,      // func
 } NodeKind;
 
 typedef struct Node Node;
 
 struct Node {
-  NodeKind kind; // ノードの型
-  Node *lhs;     // 左辺 left hand side
-  Node *rhs;     // 右辺 right hand side
-  Node **block;  // only kind == ND_BLOCK
-  int val;       // kindがND_NUMの時だけ使う
-  int offset;    // kindがND_LVARの時だけ使う
+  NodeKind kind;  // ノードの型
+  Node *lhs;      // 左辺 left hand side
+  Node *rhs;      // 右辺 right hand side
+  Node **block;   // only kind == ND_BLOCK
+  char *funcname; // 関数名
+  int len;        //
+  int val;        // kindがND_NUMの時だけ使う
+  int offset;     // kindがND_LVARの時だけ使う
 };
 
 // 2項演算子用のNode

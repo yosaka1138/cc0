@@ -152,7 +152,7 @@ Token *tokenize() {
     }
 
     // 1文字の演算子
-    if (strchr("+-*/()<>=;{}", *p)) {
+    if (strchr("+-*/()<>=;{},", *p)) {
       cur = new_token(TK_RESERVED, cur, p, 1);
       p++;
       continue;
@@ -361,7 +361,11 @@ Node *unary() {
   return primary();
 }
 
+// primary = num
+//        |  ident ( "(" expr* ")")?
+//        |  "(" expr ")"
 Node *primary() {
+
   // 次のトークンが(なら( expr ) という形になっているはず
   if (consume("(")) {
     Node *node = expr();
@@ -371,6 +375,25 @@ Node *primary() {
   Token *tok = consume_kind(TK_IDENT);
 
   if (tok) {
+    if (consume("(")) {
+      // 関数呼び出し
+      Node *node = calloc(1, sizeof(Node));
+      node->kind = ND_FUNC;
+      node->funcname = tok->str;
+      node->len = tok->len;
+      // TODO: とりあえず引数10個まで
+      node->block = calloc(10, sizeof(Node));
+      for (int i = 0; !consume(")"); i++) {
+        node->block[i] = expr();
+        if (consume(")")) {
+          break;
+        }
+        // 引数の間には','がある
+        expect(",");
+      }
+
+      return node;
+    }
     Node *node = calloc(1, sizeof(Node));
     node->kind = ND_LVAR;
 

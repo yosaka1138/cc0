@@ -1,5 +1,6 @@
 #include "cc0.h"
 #include <stdio.h>
+#include <string.h>
 
 //
 void gen_lval(Node *node) {
@@ -15,21 +16,39 @@ int genCounter = 0;
 
 // Code Generator
 void gen(Node *node) {
+  printf("  # START GEN\n");
   if (!node)
     return;
   genCounter += 1;
   int id = genCounter;
 
+  char name[100] = {0};
   switch (node->kind) {
 
+  case ND_FUNC:
+    printf("  # ND_FUNC\n");
+    memcpy(name, node->funcname, node->len);
+    for (int i = 0; node->block[i]; i++) {
+      gen(node->block[i]);
+    }
+    // 引数は２つ
+    printf("  pop rsi\n");
+    printf("  pop rdi\n");
+    printf("  call %s\n", name);
+    printf("  # END ND_FUNC\n");
+    return;
+
   case ND_BLOCK:
+    printf("  # ND_BLOCK\n");
     for (int i = 0; node->block[i]; i++) {
       gen(node->block[i]);
       printf("  pop rax\n");
     }
+    printf("  # END ND_BLOCK\n");
     return;
 
   case ND_FOR:
+    printf("  # ND_FOR\n");
     gen(node->lhs->lhs);
     printf(".Lbegin%03d:\n", id);
     gen(node->lhs->rhs);
@@ -43,9 +62,11 @@ void gen(Node *node) {
     gen(node->rhs->lhs);
     printf("  jmp .Lbegin%03d\n", id);
     printf(".Lend%03d:\n", id);
+    printf("  # END ND_FOR\n");
     return;
 
   case ND_WHILE:
+    printf("  # ND_WHILE\n");
     printf(".Lbegin%03d:\n", id);
     gen(node->lhs);
     printf("  pop rax\n");
@@ -54,9 +75,11 @@ void gen(Node *node) {
     gen(node->rhs);
     printf("  jmp .Lbegin%03d\n", id);
     printf(".Lend%03d:\n", id);
+    printf("  # END ND_WHILE\n");
     return;
 
   case ND_IF:
+    printf("  # ND_IF\n");
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
@@ -74,20 +97,26 @@ void gen(Node *node) {
       gen(node->rhs->rhs);
     }
     printf(".Lend%03d:\n", id);
+    printf("  # END ND_IF\n");
     return;
 
   case ND_NUM:
+    printf("  # ND_NUM\n");
     printf("  push %d\n", node->val);
+    printf("  # END ND_NUM\n");
     return;
 
   case ND_LVAR:
+    printf("  # ND_LVAR\n");
     gen_lval(node);
     printf("  pop rax\n");
     printf("  mov rax, [rax]\n");
     printf("  push rax\n");
+    printf("  # END ND_LVAR\n");
     return;
 
   case ND_ASSIGN:
+    printf("  # ND_ASSIGN\n");
     gen_lval(node->lhs);
     gen(node->rhs);
 
@@ -95,14 +124,17 @@ void gen(Node *node) {
     printf("  pop rax\n");
     printf("  mov [rax], rdi\n");
     printf("  push rdi\n");
+    printf("  # END ND_ASSIGN\n");
     return;
 
   case ND_RETURN:
+    printf("  # ND_RETURN\n");
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
     printf("  ret\n");
+    printf("  # END ND_RETURN\n");
     return;
   }
 
@@ -155,4 +187,5 @@ void gen(Node *node) {
     break;
   }
   printf("  push rax\n");
+  printf("  # END GEN\n");
 }
