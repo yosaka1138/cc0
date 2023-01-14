@@ -15,7 +15,8 @@ typedef enum {
   TK_IF,       // if 文
   TK_ELSE,     // else
   TK_WHILE,    // while
-  TK_FOR       // for
+  TK_FOR,      // for
+  TK_BLOCK,    // block
 } TokenKind;
 
 typedef struct Token Token;
@@ -95,6 +96,7 @@ typedef enum {
   ND_FOR,       // for
   ND_FOR_LEFT,  // for left
   ND_FOR_RIGHT, // for right
+  ND_BLOCK,     // block
 } NodeKind;
 
 typedef struct Node Node;
@@ -103,6 +105,7 @@ struct Node {
   NodeKind kind; // ノードの型
   Node *lhs;     // 左辺 left hand side
   Node *rhs;     // 右辺 right hand side
+  Node **block;  // only kind == ND_BLOCK
   int val;       // kindがND_NUMの時だけ使う
   int offset;    // kindがND_LVARの時だけ使う
 };
@@ -115,7 +118,7 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
 // 数値を受け取る用のNode
 Node *new_num(int val);
 
-// Parser
+// Parser  TODO: 100はハードコード
 Node *code[100];
 // program = stmt*
 void program();

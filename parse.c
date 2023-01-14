@@ -1,6 +1,4 @@
 #include "cc0.h"
-#include <stdlib.h>
-#include <string.h>
 
 // エラー報告のための関数
 // printfと同じ引数をとる
@@ -154,7 +152,7 @@ Token *tokenize() {
     }
 
     // 1文字の演算子
-    if (strchr("+-*/()<>=;", *p)) {
+    if (strchr("+-*/()<>=;{}", *p)) {
       cur = new_token(TK_RESERVED, cur, p, 1);
       p++;
       continue;
@@ -206,12 +204,24 @@ Node *assign() {
 Node *expr() { return assign(); }
 
 // stmt = expr ";"
+//        | "{" stmt "}"
 //        |  "if" "(" expr ")" stmt ("else" stmt)?
 //        |  "while" "(" expr ")" stmt
 //        |  "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //        |  ...
 Node *stmt() {
   Node *node;
+
+  if (consume("{")) {
+    node = calloc(1, sizeof(Node));
+    node->kind = ND_BLOCK;
+    // TODO: とりあえず100行Nodeが入る
+    node->block = calloc(100, sizeof(Node));
+    for (int i = 0; !consume("}"); i++) {
+      node->block[i] = stmt();
+    }
+    return node;
+  }
 
   if (consume_kind(TK_FOR)) {
     expect("(");

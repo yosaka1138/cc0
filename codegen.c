@@ -22,10 +22,20 @@ void gen(Node *node) {
 
   switch (node->kind) {
 
+  case ND_BLOCK:
+    for (int i = 0; node->block[i]; i++) {
+      gen(node->block[i]);
+      printf("  pop rax\n");
+    }
+    return;
+
   case ND_FOR:
     gen(node->lhs->lhs);
     printf(".Lbegin%03d:\n", id);
     gen(node->lhs->rhs);
+    if (!node->lhs->rhs) {
+      printf("  push 1\n");
+    }
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
     printf("  je .Lend%03d\n", id);

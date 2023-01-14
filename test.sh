@@ -96,6 +96,16 @@ if (a != 3) return a;
 if (a == 3) return a;
 return 1;"
 
+# block statement
+assert 10 "a = 0;
+for (;;) {
+    a = a + 1;
+    if (a == 5){
+        return 10;
+    }
+}
+return 2;"
+
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
 echo OK!
