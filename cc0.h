@@ -97,7 +97,8 @@ typedef enum {
   ND_FOR_LEFT,  // for left
   ND_FOR_RIGHT, // for right
   ND_BLOCK,     // block
-  ND_FUNC,      // func
+  ND_FUNC_CALL, // call func
+  ND_FUNC_DEF,  // define func
 } NodeKind;
 
 typedef struct Node Node;
@@ -125,6 +126,7 @@ Node *new_num(int val);
 Node *code[100];
 // program = stmt*
 void program();
+Node *func();
 // stmt = expr ";"
 Node *stmt();
 // expr = assign

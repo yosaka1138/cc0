@@ -1,4 +1,6 @@
 #include "cc0.h"
+#include <stdlib.h>
+#include <string.h>
 
 // エラー報告のための関数
 // printfと同じ引数をとる
@@ -291,13 +293,36 @@ Node *stmt() {
   return node;
 }
 
-// program = stmt*
+// program = func*
 void program() {
   int i = 0;
   while (!at_eof()) {
-    code[i++] = stmt();
+    code[i++] = func();
   }
   code[i] = NULL;
+}
+
+// func = ident "("  ")" "{" stmt "}"
+Node *func() {
+  Node *node;
+  Token *tok = (consume_kind(TK_IDENT));
+  if (tok == NULL) {
+    error("not function!");
+  }
+  node = calloc(1, sizeof(Node));
+  node->kind = ND_FUNC_DEF;
+  node->funcname = calloc(100, sizeof(char));
+  memcpy(node->funcname, tok->str, tok->len);
+  expect("(");
+  // TODO: args
+  expect(")");
+  node->lhs = stmt();
+  // node->block = calloc(100, sizeof(Node));
+  // for (int i = 0; !consume("}"); i++) {
+  //   node->block[i] = stmt();
+  // }
+  // expect("}");
+  return node;
 }
 
 Node *equality() {
@@ -378,9 +403,9 @@ Node *primary() {
     if (consume("(")) {
       // 関数呼び出し
       Node *node = calloc(1, sizeof(Node));
-      node->kind = ND_FUNC;
-      node->funcname = tok->str;
-      node->len = tok->len;
+      node->kind = ND_FUNC_CALL;
+      node->funcname = calloc(100, sizeof(char));
+      memcpy(node->funcname, tok->str, tok->len);
       // TODO: とりあえず引数10個まで
       node->block = calloc(10, sizeof(Node));
       for (int i = 0; !consume(")"); i++) {

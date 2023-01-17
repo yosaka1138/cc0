@@ -17,7 +17,7 @@ char *argRegs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 // Code Generator
 void gen(Node *node) {
-  printf("  # START GEN\n");
+  // printf("  # START GEN\n");
   if (!node)
     return;
   genCounter += 1;
@@ -26,8 +26,30 @@ void gen(Node *node) {
   char name[100] = {0};
   switch (node->kind) {
 
-  case ND_FUNC:
-    printf("  # ND_FUNC\n");
+  case ND_FUNC_DEF:
+    printf("  # ND_FUNC_DEF\n");
+    printf("%s:\n", node->funcname);
+
+    // プロローグ
+    // 変数26個分の領域を確保
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, 208\n"); // TODO: 引数の数*8を指定する
+
+    gen(node->lhs);
+
+    // エピローグ
+    // スタックストップに式全体の値が残っているはずなので，
+    // それをRAXにロードして関数からの返り値とする
+    // FIXME: mov rax, 0が必要か？
+    printf("  mov rsp, rbp\n");
+    printf("  pop rbp\n");
+    printf("  ret\n");
+    printf("  # END ND_FUNC_DEF\n");
+    return;
+
+  case ND_FUNC_CALL:
+    printf("  # ND_FUNC_CALL\n");
     memcpy(name, node->funcname, node->len);
     int argCount = 0;
     for (int i = 0; node->block[i]; i++) {
@@ -41,15 +63,16 @@ void gen(Node *node) {
     printf("  and rax, 15\n");
     printf("  jnz .L.call.%03d\n", id);
     printf("  mov rax, 0\n");
-    printf("  call %s\n", name);
+    printf("  call %s\n", node->funcname);
     printf("  jmp .L.end.%03d\n", id);
     printf(".L.call.%03d:\n", id);
     printf("  sub rsp, 8\n");
     printf("  mov rax, 0\n");
-    printf("  call %s\n", name);
+    printf("  call %s\n", node->funcname);
     printf("  add rsp, 8\n");
     printf(".L.end.%03d:\n", id);
-    printf("  # END ND_FUNC\n");
+    printf("  push rax\n"); // FIXME: あってるか？
+    printf("  # END ND_FUNC_CALL\n");
     return;
 
   case ND_BLOCK:
