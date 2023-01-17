@@ -13,6 +13,7 @@ void gen_lval(Node *node) {
 }
 
 int genCounter = 0;
+char *argRegs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 // Code Generator
 void gen(Node *node) {
@@ -28,12 +29,14 @@ void gen(Node *node) {
   case ND_FUNC:
     printf("  # ND_FUNC\n");
     memcpy(name, node->funcname, node->len);
+    int argCount = 0;
     for (int i = 0; node->block[i]; i++) {
       gen(node->block[i]);
+      argCount++;
     }
-    // 引数は２つ
-    printf("  pop rsi\n");
-    printf("  pop rdi\n");
+    for (int i = argCount - 1; i >= 0; i--) {
+      printf("  pop %s\n", argRegs[i]);
+    }
     printf("  call %s\n", name);
     printf("  # END ND_FUNC\n");
     return;

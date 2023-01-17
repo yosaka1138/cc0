@@ -109,8 +109,17 @@ for (;;) {
 }
 return 2;"
 
-assert 0 "foo();"
-assert 0 "bar(3, 4);"
+assert 100 "a = 0;
+for (i = 0; i < 10; i = i + 1){
+    for (j = 0; j < 10; j = j + 1){
+        a = a + 1;
+    }
+}
+return a;"
+
+assert 0 "foo(); return 0;"
+assert 0 "bar(3, 4); return 0;"
+assert 0 "bar2(1,2,3); return 0;"
 
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'

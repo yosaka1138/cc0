@@ -13,6 +13,6 @@ test: cc0
 	./test.sh
 
 clean:
-		rm -f cc0 *.o *~ tmp*
+		rm -f cc0 *.o *~ tmp* a.out
 
 .PHONY: test clean
