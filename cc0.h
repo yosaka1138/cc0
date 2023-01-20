@@ -41,10 +41,11 @@ struct LVar {
 LVar *find_lvar(Token *tok);
 
 //現在見ているトークン
-Token *token;
-char *user_input;
+extern Token *token;
+extern char *user_input;
 // ローカル変数
-LVar *locals;
+extern LVar *locals[];
+extern int cur_func;
 
 // エラー報告のための関数
 // printfと同じ引数をとる
@@ -107,7 +108,8 @@ struct Node {
   NodeKind kind;  // ノードの型
   Node *lhs;      // 左辺 left hand side
   Node *rhs;      // 右辺 right hand side
-  Node **block;   // only kind == ND_BLOCK
+  Node **block;   // only kind == ND_FUNC*
+  Node **args;    // args only kind == ND_FUNC_DEF
   char *funcname; // 関数名
   int len;        //
   int val;        // kindがND_NUMの時だけ使う
@@ -123,7 +125,7 @@ Node *new_binary(NodeKind kind, Node *lhs, Node *rhs);
 Node *new_num(int val);
 
 // Parser  TODO: 100はハードコード
-Node *code[100];
+extern Node *code[];
 // program = stmt*
 void program();
 Node *func();
@@ -145,6 +147,7 @@ Node *mul();
 Node *unary();
 // primary = num | indent | "(" expr ")"
 Node *primary();
+Node *variable(Token *tok);
 
 // Code Generator
 void gen_lval(Node *node);

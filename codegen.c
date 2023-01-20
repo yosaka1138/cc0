@@ -22,6 +22,7 @@ void gen(Node *node) {
     return;
   genCounter += 1;
   int id = genCounter;
+  int argCount = 0;
 
   char name[100] = {0};
   switch (node->kind) {
@@ -31,11 +32,22 @@ void gen(Node *node) {
     printf("%s:\n", node->funcname);
 
     // プロローグ
-    // 変数26個分の領域を確保
+    // 変数分の領域を確保
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
-    printf("  sub rsp, 208\n"); // TODO: 引数の数*8を指定する
+    // 引数の値をStackに積む
+    // 自動的にrspの値が引かれる
+    for (int i = 0; node->args[i]; i++) {
+      printf("  push %s\n", argRegs[i]);
+      argCount++;
+    }
+    if (locals[cur_func]) {
+      int offset = locals[cur_func][0].offset;
+      offset -= argCount * 8;
+      printf("  sub rsp, %d\n", offset);
+    }
 
+    // 引数を除いた変数の数分rspをずらして、変数領域を確保する
     gen(node->lhs);
 
     // エピローグ
@@ -51,7 +63,7 @@ void gen(Node *node) {
   case ND_FUNC_CALL:
     printf("  # ND_FUNC_CALL\n");
     memcpy(name, node->funcname, node->len);
-    int argCount = 0;
+    // int argCount = 0;
     for (int i = 0; node->block[i]; i++) {
       gen(node->block[i]);
       argCount++;
@@ -79,7 +91,8 @@ void gen(Node *node) {
     printf("  # ND_BLOCK\n");
     for (int i = 0; node->block[i]; i++) {
       gen(node->block[i]);
-      printf("  pop rax\n");
+      // TODO: 要確認
+      // printf("  pop rax\n");
     }
     printf("  # END ND_BLOCK\n");
     return;

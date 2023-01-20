@@ -1,6 +1,12 @@
 #include "cc0.h"
-#include <stdlib.h>
-#include <string.h>
+
+//現在見ているトークン
+Token *token;
+char *user_input;
+// ローカル変数
+LVar *locals[100];
+Node *code[100];
+int cur_func = 0;
 
 // エラー報告のための関数
 // printfと同じ引数をとる
@@ -48,7 +54,7 @@ Token *consume_kind(TokenKind kind) {
 };
 
 LVar *find_lvar(Token *tok) {
-  for (LVar *var = locals; var; var = var->next) {
+  for (LVar *var = locals[cur_func]; var; var = var->next) {
     if (var->len == tok->len && !memcmp(tok->str, var->name, var->len))
       return var;
   }
@@ -302,8 +308,10 @@ void program() {
   code[i] = NULL;
 }
 
-// func = ident "("  ")" "{" stmt "}"
+// func = ident "(" (ident ",") ")" stmt
 Node *func() {
+  // locals[0]は使われないけど、まあいいか
+  cur_func++;
   Node *node;
   Token *tok = (consume_kind(TK_IDENT));
   if (tok == NULL) {
@@ -312,16 +320,22 @@ Node *func() {
   node = calloc(1, sizeof(Node));
   node->kind = ND_FUNC_DEF;
   node->funcname = calloc(100, sizeof(char));
+  // 引数の配列の長さ
+  node->args = calloc(10, sizeof(char *));
   memcpy(node->funcname, tok->str, tok->len);
   expect("(");
-  // TODO: args
-  expect(")");
+  for (int i = 0; !consume(")"); i++) {
+    // 各引数で100文字分入る
+    Token *tok = consume_kind(TK_IDENT);
+    if (tok != NULL) {
+      node->args[i] = variable(tok);
+    }
+    if (consume(")")) {
+      break;
+    }
+    expect(",");
+  }
   node->lhs = stmt();
-  // node->block = calloc(100, sizeof(Node));
-  // for (int i = 0; !consume("}"); i++) {
-  //   node->block[i] = stmt();
-  // }
-  // expect("}");
   return node;
 }
 
@@ -416,33 +430,39 @@ Node *primary() {
         // 引数の間には','がある
         expect(",");
       }
-
       return node;
     }
-    Node *node = calloc(1, sizeof(Node));
-    node->kind = ND_LVAR;
-
-    LVar *lvar = find_lvar(tok);
-    if (lvar) {
-      node->offset = lvar->offset;
-    } else {
-      lvar = calloc(1, sizeof(LVar));
-      lvar->next = locals;
-      lvar->name = tok->str;
-      lvar->len = tok->len;
-      if (locals == NULL) {
-        lvar->offset = 8;
-      } else {
-        lvar->offset = locals->offset + 8;
-      }
-      node->offset = lvar->offset;
-      locals = lvar;
-    }
-
-    /* node->offset = (tok->str[0] - 'a' + 1) * 8; */
-    return node;
+    // 関数呼び出しではない場合、変数
+    return variable(tok);
   }
-
-  // そうでなければ数値
   return new_num(expect_number());
 }
+
+Node *variable(Token *tok) {
+
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = ND_LVAR;
+
+  LVar *lvar = find_lvar(tok);
+  if (lvar) {
+    node->offset = lvar->offset;
+  } else {
+    lvar = calloc(1, sizeof(LVar));
+    lvar->next = locals[cur_func];
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+    if (locals[cur_func] == NULL) {
+      lvar->offset = 8;
+    } else {
+      lvar->offset = locals[cur_func]->offset + 8;
+    }
+    node->offset = lvar->offset;
+    locals[cur_func] = lvar;
+    // デバッグ用
+    char name[100] = {0};
+    memcpy(name, tok->str, tok->len);
+    fprintf(stderr, "*NEW VARIABLE* %s\n", name);
+  }
+  return node;
+}
+// そうでなければ数値

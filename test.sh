@@ -21,15 +21,44 @@ assert() {
 
 # test single integer
 assert 0 'main() {return 0;}'
-assert 2 "main() {return func();}
-func() {return 2;}"
+assert 3 "main() {return func(1,2);}
+func(a,b) {return a + b;}"
+assert 4 "main() {return func(1,2,3);}
+func(a,b, c) {return a + c ;}"
 assert 55 "
 plus_recur(n) {
-  if (n < 0) return 1;
+  if (n == 0){
+    return 0;
+  } else {
   return n + plus_recur(n - 1);
+  }
 }
 main() {
   return plus_recur(10);
+}
+"
+assert 55 "
+plus_recur(n) {
+  if (n == 0){
+    return 0;
+  } else {
+  return n + plus_recur(n - 1);
+  }
+}
+main() {
+  a = 10;
+  return plus_recur(a);
+}
+"
+assert 89 "
+main(){
+  return fib(10);
+}
+fib(n){
+  if (n < 2) {
+    return 1;
+  }
+  return fib(n-1) + fib(n-2);
 }
 "
 
