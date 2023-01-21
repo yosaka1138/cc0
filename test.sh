@@ -54,6 +54,7 @@ assert 89 "
 main(){
   return fib(10);
 }
+
 fib(n){
   if (n < 2) {
     return 1;
@@ -158,9 +159,9 @@ fib(n){
 # }
 # return a;"
 
-# assert 0 "foo(); return 0;"
-# assert 0 "bar(3, 4); return 0;"
-# assert 0 "bar2(1,2,3); return 0;"
+assert 0 "main(){return foo();}"
+assert 7 "main(){return bar(3, 4);}"
+assert 6 "main() {return bar2(1,2,3);}"
 
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
