@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//トークンの種類
+// トークンの種類
 typedef enum {
   TK_RESERVED, // 記号
   TK_IDENT,    // 識別子
@@ -40,7 +40,7 @@ struct LVar {
 
 LVar *find_lvar(Token *tok);
 
-//現在見ているトークン
+// 現在見ているトークン
 extern Token *token;
 extern char *user_input;
 // ローカル変数
@@ -100,6 +100,8 @@ typedef enum {
   ND_BLOCK,     // block
   ND_FUNC_CALL, // call func
   ND_FUNC_DEF,  // define func
+  ND_ADDR,      // &
+  ND_DEREF,     // *
 } NodeKind;
 
 typedef struct Node Node;

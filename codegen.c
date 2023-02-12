@@ -27,6 +27,17 @@ void gen(Node *node) {
   char name[100] = {0};
   switch (node->kind) {
 
+  case ND_ADDR:
+    gen_lval(node->lhs);
+    return;
+
+  case ND_DEREF:
+    gen(node->lhs);
+    printf("  pop rax\n");
+    printf("  mov rax, [rax]\n");
+    printf("  push rax\n");
+    return;
+
   case ND_FUNC_DEF:
     printf("  # ND_FUNC_DEF\n");
     printf("%s:\n", node->funcname);

@@ -1,6 +1,6 @@
 #include "cc0.h"
 
-//現在見ているトークン
+// 現在見ているトークン
 Token *token;
 char *user_input;
 // ローカル変数
@@ -160,7 +160,7 @@ Token *tokenize() {
     }
 
     // 1文字の演算子
-    if (strchr("+-*/()<>=;{},", *p)) {
+    if (strchr("+-*/()<>=;{},&", *p)) {
       cur = new_token(TK_RESERVED, cur, p, 1);
       p++;
       continue;
@@ -392,11 +392,19 @@ Node *mul() {
   }
 }
 
+// unary = "+"? primary
+//         "-"? primary
+//         "&"? unary
+//         "*"? unary
 Node *unary() {
   if (consume("+"))
     return unary();
   if (consume("-"))
     return new_binary(ND_SUB, new_num(0), unary());
+  if (consume("&"))
+    return new_binary(ND_ADDR, unary(), NULL);
+  if (consume("*"))
+    return new_binary(ND_DEREF, unary(), NULL);
   return primary();
 }
 
