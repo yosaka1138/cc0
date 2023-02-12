@@ -91,8 +91,6 @@ void gen(Node *node) {
     printf("  # ND_BLOCK\n");
     for (int i = 0; node->block[i]; i++) {
       gen(node->block[i]);
-      // TODO: 要確認
-      // printf("  pop rax\n");
     }
     printf("  # END ND_BLOCK\n");
     return;
@@ -100,31 +98,31 @@ void gen(Node *node) {
   case ND_FOR:
     printf("  # ND_FOR\n");
     gen(node->lhs->lhs);
-    printf(".Lbegin%03d:\n", id);
+    printf(".L.begin%03d:\n", id);
     gen(node->lhs->rhs);
     if (!node->lhs->rhs) {
       printf("  push 1\n");
     }
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je .Lend%03d\n", id);
+    printf("  je .L.end%03d\n", id);
     gen(node->rhs->rhs);
     gen(node->rhs->lhs);
-    printf("  jmp .Lbegin%03d\n", id);
-    printf(".Lend%03d:\n", id);
+    printf("  jmp .L.begin%03d\n", id);
+    printf(".L.end%03d:\n", id);
     printf("  # END ND_FOR\n");
     return;
 
   case ND_WHILE:
     printf("  # ND_WHILE\n");
-    printf(".Lbegin%03d:\n", id);
+    printf(".L.begin%03d:\n", id);
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je .Lend%03d\n", id);
+    printf("  je .L.end%03d\n", id);
     gen(node->rhs);
-    printf("  jmp .Lbegin%03d\n", id);
-    printf(".Lend%03d:\n", id);
+    printf("  jmp .L.begin%03d\n", id);
+    printf(".L.end%03d:\n", id);
     printf("  # END ND_WHILE\n");
     return;
 
@@ -133,20 +131,20 @@ void gen(Node *node) {
     gen(node->lhs);
     printf("  pop rax\n");
     printf("  cmp rax, 0\n");
-    printf("  je .Lelse%03d\n", id);
+    printf("  je .L.else%03d\n", id);
     // if 文の中身を書く
     if (node->rhs->kind == ND_ELSE) {
       gen(node->rhs->lhs);
     } else {
       gen(node->rhs);
     }
-    printf("  jmp .Lend%03d\n", id);
-    printf(".Lelse%03d:\n", id);
+    printf("  jmp .L.end%03d\n", id);
+    printf(".L.else%03d:\n", id);
     // else文がある場合はelseの中身を書く
     if (node->rhs->kind == ND_ELSE) {
       gen(node->rhs->rhs);
     }
-    printf(".Lend%03d:\n", id);
+    printf(".L.end%03d:\n", id);
     printf("  # END ND_IF\n");
     return;
 
