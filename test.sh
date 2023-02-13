@@ -19,21 +19,38 @@ assert() {
   fi
 }
 
+# int
+assert 1 "int main() {
+    int x;
+    x = 1;
+    return x;
+}"
+
+assert 5 "int main(){
+    int x;
+    x = 3;
+    return func(x, 2);
+}
+int func(int x, int y) {
+  return x + y;
+}
+"
+
 # test single integer
-assert 0 'main() {return 0;}'
-assert 3 "main() {return func(1,2);}
-func(a,b) {return a + b;}"
-assert 4 "main() {return func(1,2,3);}
-func(a,b, c) {return a + c ;}"
+assert 0 'int main() {return 0;}'
+assert 3 "int main() {return func(1,2);}
+int func(int a, int b) {return a + b;}"
+assert 4 "int main() {return func(1,2,3);}
+int func(int a, int b, int c) {return a + c ;}"
 assert 55 "
-plus_recur(n) {
+int plus_recur(int n) {
   if (n == 0){
     return 0;
   } else {
   return n + plus_recur(n - 1);
   }
 }
-main() {
+int main() {
   return plus_recur(10);
 }
 "

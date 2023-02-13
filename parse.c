@@ -100,7 +100,8 @@ struct ReservedWord {
 
 ReservedWord reservedWords[] = {
     {"return", TK_RETURN}, {"if", TK_IF},   {"else", TK_ELSE},
-    {"while", TK_WHILE},   {"for", TK_FOR}, {"", TK_EOF},
+    {"while", TK_WHILE},   {"for", TK_FOR}, {"int", TK_TYPE},
+    {"", TK_EOF},
 };
 
 bool startswith(char *p, char *q) { return memcmp(p, q, strlen(q)) == 0; }
@@ -216,6 +217,7 @@ Node *expr() { return assign(); }
 //        |  "if" "(" expr ")" stmt ("else" stmt)?
 //        |  "while" "(" expr ")" stmt
 //        |  "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//        | "int" ident ";"
 //        |  ...
 Node *stmt() {
   Node *node;
@@ -292,9 +294,18 @@ Node *stmt() {
     node = calloc(1, sizeof(Node));
     node->kind = ND_RETURN;
     node->lhs = expr();
-  } else {
-    node = expr();
+    expect(";");
+    return node;
   }
+
+  if (consume_kind(TK_TYPE)) {
+    Token *tok = consume_kind(TK_IDENT);
+    node = define_variable(tok);
+    expect(";");
+    return node;
+  }
+
+  node = expr();
   expect(";");
   return node;
 }
@@ -308,11 +319,15 @@ void program() {
   code[i] = NULL;
 }
 
-// func = ident "(" (ident ",") ")" stmt
+// func = "int" ident "(" ("int" ident ("," "int" "ident")*)?")" stmt
 Node *func() {
   // locals[0]は使われないけど、まあいいか
   cur_func++;
   Node *node;
+  if (!consume_kind(TK_TYPE)) {
+    error("function return type is not defined.");
+  }
+
   Token *tok = (consume_kind(TK_IDENT));
   if (tok == NULL) {
     error("not function!");
@@ -324,12 +339,17 @@ Node *func() {
   node->args = calloc(10, sizeof(char *));
   memcpy(node->funcname, tok->str, tok->len);
   expect("(");
+
   for (int i = 0; !consume(")"); i++) {
-    // 各引数で100文字分入る
+    if (!consume_kind(TK_TYPE)) {
+      error("function args type not found.");
+    }
+
     Token *tok = consume_kind(TK_IDENT);
     if (tok != NULL) {
-      node->args[i] = variable(tok);
+      node->args[i] = define_variable(tok);
     }
+
     if (consume(")")) {
       break;
     }
@@ -446,31 +466,47 @@ Node *primary() {
   return new_num(expect_number());
 }
 
+Node *define_variable(Token *tok) {
+
+  Node *node = calloc(1, sizeof(Node));
+  node->kind = ND_LVAR;
+
+  LVar *lvar = find_lvar(tok);
+  // 変数としてなければErorr
+  if (lvar != NULL) {
+    // デバッグ用
+    char name[100] = {0};
+    memcpy(name, tok->str, tok->len);
+    error("redefined variable %s\n", name);
+  }
+  lvar = calloc(1, sizeof(LVar));
+  lvar->next = locals[cur_func];
+  lvar->name = tok->str;
+  lvar->len = tok->len;
+  if (locals[cur_func] == NULL) {
+    lvar->offset = 8;
+  } else {
+    lvar->offset = locals[cur_func]->offset + 8;
+  }
+  node->offset = lvar->offset;
+  locals[cur_func] = lvar;
+
+  return node;
+}
+
 Node *variable(Token *tok) {
 
   Node *node = calloc(1, sizeof(Node));
   node->kind = ND_LVAR;
 
   LVar *lvar = find_lvar(tok);
-  if (lvar) {
-    node->offset = lvar->offset;
-  } else {
-    lvar = calloc(1, sizeof(LVar));
-    lvar->next = locals[cur_func];
-    lvar->name = tok->str;
-    lvar->len = tok->len;
-    if (locals[cur_func] == NULL) {
-      lvar->offset = 8;
-    } else {
-      lvar->offset = locals[cur_func]->offset + 8;
-    }
-    node->offset = lvar->offset;
-    locals[cur_func] = lvar;
-    // デバッグ用
+  if (lvar == NULL) {
     char name[100] = {0};
     memcpy(name, tok->str, tok->len);
-    fprintf(stderr, "*NEW VARIABLE* %s\n", name);
+    error("undefined variable %s\n", name);
   }
+  node->offset = lvar->offset;
+
   return node;
 }
 // そうでなければ数値

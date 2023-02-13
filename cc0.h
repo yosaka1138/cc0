@@ -17,6 +17,7 @@ typedef enum {
   TK_WHILE,    // while
   TK_FOR,      // for
   TK_BLOCK,    // block
+  TK_TYPE,     // type
 } TokenKind;
 
 typedef struct Token Token;
@@ -149,6 +150,7 @@ Node *mul();
 Node *unary();
 // primary = num | indent | "(" expr ")"
 Node *primary();
+Node *define_variable(Token *tok);
 Node *variable(Token *tok);
 
 // Code Generator
