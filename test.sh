@@ -197,6 +197,14 @@ y = 5;
 z = &y + 8;
 return *z;
 }"
+
+assert 3 "int main(){
+    int x;
+    int *y;
+    y = &x;
+    *y = 3;
+    return x;
+}"
 # エラーになる構文
 # assert 15 '20 + asumiakana -5'
 echo OK!

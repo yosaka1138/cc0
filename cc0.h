@@ -31,12 +31,20 @@ struct Token {
   int len;        // トークンの長さ
 };
 
+typedef struct Type Type;
+// 型がintかptrか
+struct Type {
+  enum { INT, PTR } ty;
+  struct Type *pter_to;
+};
+
 typedef struct LVar LVar;
 struct LVar {
   LVar *next; // 次の変数かNULL
   char *name; // 変数名
   int len;    // 変数名長さ
   int offset; // RBPからのオフセット
+  Type *type  // タイプ
 };
 
 LVar *find_lvar(Token *tok);
@@ -150,7 +158,7 @@ Node *mul();
 Node *unary();
 // primary = num | indent | "(" expr ")"
 Node *primary();
-Node *define_variable(Token *tok);
+Node *define_variable();
 Node *variable(Token *tok);
 
 // Code Generator

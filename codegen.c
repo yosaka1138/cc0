@@ -4,6 +4,11 @@
 
 //
 void gen_lval(Node *node) {
+  if (node->kind == ND_DEREF) {
+    // 右辺値として処理する→genでnode->lhsを処理すれば良い
+    gen(node->lhs);
+    return;
+  }
   if (node->kind != ND_LVAR)
     error("not ND_LVAR");
 
