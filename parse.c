@@ -393,12 +393,23 @@ Node *relational() {
 Node *add() {
   Node *node = mul();
   for (;;) {
-    if (consume("+"))
-      node = new_binary(ND_ADD, node, mul());
-    else if (consume("-"))
-      node = new_binary(ND_SUB, node, mul());
-    else
+    if (consume("+")) {
+      Node *r = mul();
+      if (node->type && node->type->ty == PTR) {
+        int n = node->type->ptr_to->ty == INT ? 4 : 8;
+        r = new_binary(ND_MUL, r, new_num(n));
+      }
+      node = new_binary(ND_ADD, node, r);
+    } else if (consume("-")) {
+      Node *r = mul();
+      if (node->type && node->type->ty == PTR) {
+        int n = node->type->ptr_to->ty == INT ? 4 : 8;
+        r = new_binary(ND_MUL, r, new_num(n));
+      }
+      node = new_binary(ND_SUB, node, r);
+    } else {
       return node;
+    }
   }
 }
 
@@ -472,14 +483,14 @@ Node *define_variable() {
   Type *type;
   type = calloc(1, sizeof(Type));
   type->ty = INT;
-  type->pter_to = NULL;
+  type->ptr_to = NULL;
 
   while (consume("*")) {
     // ポインタを処理する
     Type *t;
     t = calloc(1, sizeof(Type));
     t->ty = PTR;
-    t->pter_to = type;
+    t->ptr_to = type;
     type = t;
   }
   Token *tok = consume_kind(TK_IDENT);
@@ -509,6 +520,7 @@ Node *define_variable() {
   }
   lvar->type = type;
   node->offset = lvar->offset;
+  node->type = lvar->type;
   locals[cur_func] = lvar;
 
   return node;
@@ -526,6 +538,7 @@ Node *variable(Token *tok) {
     error("undefined variable %s\n", name);
   }
   node->offset = lvar->offset;
+  node->type = lvar->type;
 
   return node;
 }

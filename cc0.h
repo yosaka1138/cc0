@@ -35,7 +35,7 @@ typedef struct Type Type;
 // 型がintかptrか
 struct Type {
   enum { INT, PTR } ty;
-  struct Type *pter_to;
+  struct Type *ptr_to;
 };
 
 typedef struct LVar LVar;
@@ -44,7 +44,7 @@ struct LVar {
   char *name; // 変数名
   int len;    // 変数名長さ
   int offset; // RBPからのオフセット
-  Type *type  // タイプ
+  Type *type; // タイプ
 };
 
 LVar *find_lvar(Token *tok);
@@ -125,6 +125,7 @@ struct Node {
   int len;        //
   int val;        // kindがND_NUMの時だけ使う
   int offset;     // kindがND_LVARの時だけ使う
+  Type *type;     // only kind == ND_LVAR
 };
 
 // 2項演算子用のNode
